@@ -18,7 +18,7 @@ public class AsyncReader {
     AtomicInteger ai = new AtomicInteger();
 
     Flux<Integer> gen = Flux.generate(sink -> {
-      sleepQuietly(10);
+      sleepQuietly(100);
       int v = ai.getAndIncrement();
       if (v > 20) {
         log("Generator complete");
@@ -34,7 +34,7 @@ public class AsyncReader {
 
     pf = pf.map(i -> {
       log("Transform 1 [%d]", i);
-      sleepQuietly(100);
+      sleepQuietly(50);
       return 10000 + i;
     });
 
@@ -49,6 +49,7 @@ public class AsyncReader {
     Flux<Integer> seq = ordered.subscribeOn(Schedulers.elastic());
     long timeLo = System.nanoTime();
     final AtomicLong timeHi = new AtomicLong(-1);
+    seq = seq.subscribeOn(Schedulers.elastic());
     Disposable sub = seq.subscribe(
         transofrmed -> {
           log("Finished result: [%d], press enter to continue", transofrmed);
